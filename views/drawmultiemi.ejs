@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Emirate Plate Maker - PLATES.AE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #e53935;
+            --bg-gray: #e0e0e0;
+            --text-dark: #333;
+            --white: #ffffff;
+            --accent: #1a56db;
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg-gray); color: var(--text-dark); }
+        
+        .logo-container { background: white; padding: 20px 10%; display: flex; justify-content: center; align-items: center; }
+        .logo { border: 2px solid var(--primary-red); padding: 5px 15px; font-size: 32px; font-weight: bold; color: var(--primary-red); text-decoration: none; letter-spacing: 2px; }
+        .main-nav { background: var(--primary-red); padding: 15px 10%; display: flex; justify-content: flex-end; align-items: center; }
+        .main-nav a { color: white; text-decoration: none; margin-left: 20px; font-size: 14px; font-weight: 500; }
+        
+        .container { max-width: 1400px; margin: 20px auto; padding: 0 20px; }
+        
+        .main-grid { display: grid; grid-template-columns: 450px 1fr; gap: 30px; align-items: start; }
+        
+        .step-container { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .step-header { background: #f8f9fa; border-left: 4px solid var(--primary-red); padding: 10px 15px; margin: -25px -25px 20px -25px; color: #333; font-size: 18px; font-weight: bold; border-radius: 8px 8px 0 0; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: #666; }
+        .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 15px; width: 100%; box-sizing: border-box; }
+        .form-group textarea { height: 60px; resize: none; }
+
+        .preview-column { position: sticky; top: 20px; }
+        .results-container { display: flex; flex-direction: column; gap: 20px; width: 100%; }
+        .plate-row-item { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+            transition: transform 0.2s;
+        }
+        .plate-row-item:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+        
+        .row-canvas-container { flex-shrink: 0; }
+        .row-info { flex-grow: 1; display: flex; flex-direction: column; gap: 5px; }
+        .row-price { color: var(--primary-red); font-size: 22px; font-weight: bold; }
+        .row-comment { color: #666; font-size: 13px; font-style: italic; }
+        .row-contact-bar { 
+            margin-top: 10px;
+            color: white; 
+            padding: 8px 15px; 
+            border-radius: 5px; 
+            text-align: center; 
+            font-weight: bold; 
+            font-size: 15px;
+            display: inline-block;
+            min-width: 150px;
+        }
+        
+        .row-actions { flex-shrink: 0; }
+        .btn-download-row { 
+            background: #f0f0f0; 
+            color: #333; 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            border-radius: 50%; 
+            cursor: pointer; 
+            font-size: 18px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-download-row:hover { background: var(--primary-red); color: white; border-color: var(--primary-red); }
+
+        .customization-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .color-group { display: flex; flex-direction: column; gap: 5px; }
+        .color-input { height: 40px; cursor: pointer; border: 1px solid #ddd; padding: 2px; width: 100%; }
+        
+        .btn-action { 
+            background: var(--primary-red); color: white; border: none; padding: 15px 30px; 
+            border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%;
+            transition: background 0.2s; margin-top: 10px;
+        }
+        .btn-action:hover { background: #d32f2f; }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <a href="/" class="logo">PLATES.AE</a>
+    </div>
+    <nav class="main-nav">
+        <a href="/">Home</a>
+        <a href="/drawing">Single Plate</a>
+        <a href="/drawmultiemi">Multi Emirate</a>
+    </nav>
+
+    <div class="container">
+        <div class="main-grid">
+            <div class="controls-column">
+                <!-- Step 1: Data -->
+                <div class="step-container">
+                    <div class="step-header">Step 1: Fill Plate Data</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Plate Code</label>
+                            <input type="text" id="plateCode" placeholder="A" value="A" oninput="updateMultiPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Plate Number</label>
+                            <input type="text" id="plateNumber" placeholder="12345" value="12345" oninput="updateMultiPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Price (AED)</label>
+                            <input type="text" id="platePrice" placeholder="00,000 AED" value="00,000 AED" oninput="updateMultiPreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" id="contactInfo" placeholder="0500000000" value="0500000000" oninput="updateMultiPreview()">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Customization -->
+                <div class="step-container">
+                    <div class="step-header">Step 2: Settings & Customization</div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Communication & Comment</label>
+                            <textarea id="commentText" placeholder="Add a comment..." oninput="updateMultiPreview()">Call for more details</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Emirate Logo</label>
+                            <select id="logoSelect" onchange="updateMultiPreview()">
+                                <option value="standard">Standard Emirate Logo</option>
+                                <option value="vip">VIP Gold Logo</option>
+                                <option value="none">No Logo</option>
+                            </select>
+                        </div>
+                        <div class="customization-grid">
+                            <div class="color-group">
+                                <label>Background</label>
+                                <input type="color" id="bgColor" class="color-input" value="#ffffff" oninput="updateMultiPreview()">
+                            </div>
+                            <div class="color-group">
+                                <label>Contact Bar</label>
+                                <input type="color" id="barColor" class="color-input" value="#0056b3" oninput="updateMultiPreview()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-action" onclick="downloadImage()">
+                    <i class="fa-solid fa-download"></i> Download Image
+                </button>
+            </div>
+
+            <div class="preview-column">
+                <div id="resultsContainer" class="results-container">
+                    <!-- Individual plate rows will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const resultsContainer = document.getElementById('resultsContainer');
+
+        const EMIRATES = [
+            { name: 'DUBAI', color: '#e53935', short: 'DXB' },
+            { name: 'ABU DHABI', color: '#1A3A6B', short: 'AUH' },
+            { name: 'SHARJAH', color: '#006400', short: 'SHJ' },
+            { name: 'AJMAN', color: '#8B0000', short: 'AJM' },
+            { name: 'RAK', color: '#4B0082', short: 'RAK' },
+            { name: 'FUJAIRAH', color: '#8B4513', short: 'FUJ' },
+            { name: 'UAQ', color: '#2F4F4F', short: 'UAQ' }
+        ];
+
+        function updateMultiPreview() {
+            const code = document.getElementById('plateCode').value || 'A';
+            const num = document.getElementById('plateNumber').value || '12345';
+            const priceText = document.getElementById('platePrice').value || '00,000 AED';
+            const contactText = document.getElementById('contactInfo').value || '0500000000';
+            const comment = document.getElementById('commentText').value || '';
+            const bg = document.getElementById('bgColor').value;
+            const bar = document.getElementById('barColor').value;
+            const logoType = document.getElementById('logoSelect').value;
+
+            resultsContainer.innerHTML = '';
+            resultsContainer.style.backgroundColor = bg;
+            resultsContainer.style.padding = '20px';
+            resultsContainer.style.borderRadius = '12px';
+
+            EMIRATES.forEach((emi) => {
+                const row = document.createElement('div');
+                row.className = 'plate-row-item';
+                
+                // Canvas for plate
+                const canvasContainer = document.createElement('div');
+                canvasContainer.className = 'row-canvas-container';
+                const canvas = document.createElement('canvas');
+                canvas.width = 480;
+                canvas.height = 110;
+                drawSinglePlate(canvas, emi, code, num, logoType);
+                canvasContainer.appendChild(canvas);
+                
+                // Info Section
+                const info = document.createElement('div');
+                info.className = 'row-info';
+                
+                const price = document.createElement('div');
+                price.className = 'row-price';
+                price.innerText = priceText.includes('AED') ? priceText : priceText + ' AED';
+                
+                const comm = document.createElement('div');
+                comm.className = 'row-comment';
+                comm.innerText = comment;
+                
+                const contactBar = document.createElement('div');
+                contactBar.className = 'row-contact-bar';
+                contactBar.style.backgroundColor = bar;
+                contactBar.innerText = contactText;
+                
+                info.appendChild(price);
+                info.appendChild(comm);
+                info.appendChild(contactBar);
+                
+                // Actions
+                const actions = document.createElement('div');
+                actions.className = 'row-actions';
+                const dlBtn = document.createElement('button');
+                dlBtn.className = 'btn-download-row';
+                dlBtn.innerHTML = '<i class="fa-solid fa-download"></i>';
+                dlBtn.title = 'Download ' + emi.name + ' Plate';
+                dlBtn.onclick = () => downloadRowImage(canvas, emi.name);
+                actions.appendChild(dlBtn);
+                
+                row.appendChild(canvasContainer);
+                row.appendChild(info);
+                row.appendChild(actions);
+                
+                resultsContainer.appendChild(row);
+            });
+        }
+
+        function drawSinglePlate(canvas, emi, code, num, logoType) {
+            const ctx = canvas.getContext('2d');
+            const plateW = canvas.width;
+            const plateH = canvas.height;
+            const x = 0;
+            const y = 0;
+
+            // 1. Metallic Body Gradient
+            const grad = ctx.createLinearGradient(x, y, x, y + plateH);
+            grad.addColorStop(0, '#ffffff');
+            grad.addColorStop(0.15, '#f9f9f9');
+            grad.addColorStop(0.5, '#eeeeee');
+            grad.addColorStop(0.85, '#f5f5f5');
+            grad.addColorStop(1, '#d0d0d0');
+            ctx.fillStyle = grad;
+            
+            ctx.beginPath();
+            ctx.roundRect(x, y, plateW, plateH, 6);
+            ctx.fill();
+
+            // 2. Multi-layered Embossed Border
+            ctx.strokeStyle = '#999999';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(x+3, y+3, plateW-6, plateH-6);
+            
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x+1, y+1, plateW-2, plateH-2);
+            
+            ctx.strokeStyle = '#bbbbbb';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(x+5, y+5, plateW-10, plateH-10);
+
+            // 3. Left Emirate Section
+            const logoW = 100;
+            
+            if (logoType !== 'none') {
+                ctx.fillStyle = logoType === 'vip' ? '#D4AF37' : emi.color;
+                let emiFontSize = 18;
+                ctx.font = '900 ' + emiFontSize + 'px "Arial Black", Gadget, sans-serif';
+                ctx.textAlign = 'center';
+                
+                let emiName = emi.name;
+                let emiMetrics = ctx.measureText(emiName);
+                const maxEmiW = logoW - 15;
+                
+                if (emiMetrics.width > maxEmiW) {
+                    emiFontSize = Math.floor(emiFontSize * (maxEmiW / emiMetrics.width));
+                    ctx.font = '900 ' + emiFontSize + 'px "Arial Black", Gadget, sans-serif';
+                }
+                ctx.fillText(emiName, x + logoW/2, y + plateH/2 + 6);
+            }
+
+            // Divider
+            ctx.beginPath();
+            ctx.moveTo(x + logoW, y + 12);
+            ctx.lineTo(x + logoW, y + plateH - 12);
+            ctx.strokeStyle = '#bbbbbb';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + logoW + 1, y + 12);
+            ctx.lineTo(x + logoW + 1, y + plateH - 12);
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // 4. Code & Number
+            const maxCodeW = 60;
+            const maxNumW = plateW - logoW - 80;
+            ctx.fillStyle = '#1a1a1a';
+            ctx.textAlign = 'center';
+            
+            ctx.font = '300 48px Arial';
+            let dCode = code.toUpperCase();
+            let cM = ctx.measureText(dCode);
+            if (cM.width > maxCodeW) ctx.font = '300 ' + Math.floor(48 * (maxCodeW / cM.width)) + 'px Arial';
+            ctx.fillText(dCode, x + logoW + 45, y + plateH/2 + 15);
+            
+            ctx.font = '900 65px "Arial Black", Gadget, sans-serif';
+            let dNum = num;
+            let nM = ctx.measureText(dNum);
+            if (nM.width > maxNumW) ctx.font = '900 ' + Math.floor(65 * (maxNumW / nM.width)) + 'px "Arial Black", Gadget, sans-serif';
+            ctx.fillText(dNum, x + logoW + (plateW - logoW + 10)/2, y + plateH/2 + 20);
+
+            // Reflection
+            const refl = ctx.createLinearGradient(x, y, x + plateW, y + plateH);
+            refl.addColorStop(0, 'rgba(255,255,255,0)');
+            refl.addColorStop(0.48, 'rgba(255,255,255,0)');
+            refl.addColorStop(0.5, 'rgba(255,255,255,0.12)');
+            refl.addColorStop(0.52, 'rgba(255,255,255,0)');
+            refl.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = refl;
+            ctx.fillRect(x, y, plateW, plateH);
+        }
+
+        function downloadRowImage(canvas, name) {
+            const link = document.createElement('a');
+            link.download = name + '-plate.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function downloadImage() {
+            // Logic to download all plates combined if needed, 
+            // but the user asked for individual downloadable.
+            // For now, let's keep the existing logic or just prompt.
+            alert('Please use the individual download buttons next to each plate.');
+        }
+
+        window.onload = updateMultiPreview;
+    </script>
+</body>
+</html>

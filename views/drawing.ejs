@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+    <style>
+        :root {
+            --primary-red: #e53935;
+            --bg-gray: #f4f4f4;
+            --text-dark: #333;
+            --white: #ffffff;
+            --accent: #1a56db;
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg-gray); color: var(--text-dark); }
+        
+        .logo-container { background: white; padding: 20px 10%; display: flex; justify-content: center; align-items: center; }
+        .logo { border: 2px solid var(--primary-red); padding: 5px 15px; font-size: 32px; font-weight: bold; color: var(--primary-red); text-decoration: none; letter-spacing: 2px; }
+        .main-nav { background: var(--primary-red); padding: 15px 10%; display: flex; justify-content: flex-end; align-items: center; }
+        .main-nav a { color: white; text-decoration: none; margin-left: 20px; font-size: 14px; font-weight: 500; }
+        
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        
+        /* Vehicle Grid */
+        .car-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 40px; 
+        }
+        .car-card { 
+            background: white; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            cursor: pointer; 
+            border: 2px solid transparent; 
+            transition: all 0.2s; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .car-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .car-card.active { border-color: var(--primary-red); }
+        .car-card img { width: 100%; height: 180px; object-fit: cover; }
+        .car-card-info { padding: 12px; text-align: center; font-weight: bold; }
+
+        /* Main Preview Section (Hidden until car selected) */
+        #previewSection { display: none; margin-top: 20px; }
+        .preview-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        #mainCarCanvas { 
+            width: 100%; 
+            height: auto; 
+            max-height: 700px;
+            border-radius: 8px; 
+            background: #eee;
+            object-fit: contain;
+        }
+        #previewVideo {
+            width: 100%;
+            height: auto;
+            max-height: 700px;
+            border-radius: 8px;
+            display: none;
+            object-fit: contain;
+        }
+        #videoOverlay {
+            position: absolute;
+            top: 30px; /* match padding */
+            left: 30px;
+            pointer-events: none;
+        }
+
+        /* Editing Controls (Under Preview) */
+        .editing-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+            text-align: left;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        .control-group { margin-bottom: 20px; }
+        .control-group label { display: block; font-size: 12px; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 8px; }
+        .control-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 18px; font-weight: bold; box-sizing: border-box; }
+        
+        .emirate-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+        .etab { padding: 8px 15px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .etab.active { background: var(--primary-red); color: white; border-color: var(--primary-red); }
+
+        .btn-rand { background: #555; color: white; border: none; padding: 12px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
+        .btn-multi { 
+            background: var(--primary-red); color: white; text-decoration: none; 
+            display: inline-block; padding: 12px 25px; border-radius: 4px; 
+            font-weight: bold; margin-bottom: 30px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <a href="/" class="logo">PLATES.AE</a>
+    </div>
+    <nav class="main-nav">
+        <a href="/admin-dashboard" style="background: rgba(0,0,0,0.2); padding: 5px 10px; border-radius: 4px;"><i class="fa-solid fa-lock"></i> Admin</a>
+        <a href="/">Home</a>
+        <a href="/listings">Listings</a>
+        <a href="/drawing">Drawing Numbers</a>
+    </nav>
+
+    <div class="container">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 style="color: #333;">Select a Vehicle to Start</h2>
+            <a href="/drawmultiemi" class="btn-multi">Open Multi Emirate Maker</a>
+        </div>
+
+        <!-- Step 1: Vehicle Selection Grid -->
+        <div id="carGrid" class="car-grid">
+            <!-- Car cards will be injected here -->
+        </div>
+
+        <!-- Step 2: Live Preview & Editing (Visible after selection) -->
+        <div id="previewSection">
+            <div class="preview-card">
+                <div id="activeCarName"></div>
+                <div style="margin-top: 10px;">
+                    <button class="btn-rand" style="width: auto; padding: 10px 20px;" onclick="downloadImage()">Download Preview with Watermark</button>
+                </div>
+                <div id="previewContainer" style="position: relative;">
+                    <canvas id="mainCarCanvas" width="1200" height="800"></canvas>
+                    <video id="previewVideo" muted loop autoplay></video>
+                    <canvas id="videoOverlay" style="display:none;"></canvas>
+                </div>
+                
+                <div class="editing-controls">
+                    <div class="controls-left">
+                        <div class="control-group">
+                            <label>Choose Emirate Style</label>
+                            <div class="emirate-tabs" id="emirateTabs">
+                                <button class="etab active" onclick="setEmirate('Dubai', this)">Dubai</button>
+                                <button class="etab" onclick="setEmirate('Abu Dhabi', this)">Abu Dhabi</button>
+                                <button class="etab" onclick="setEmirate('Sharjah', this)">Sharjah</button>
+                                <button class="etab" onclick="setEmirate('Ajman', this)">Ajman</button>
+                            </div>
+                        </div>
+                        <button class="btn-rand" onclick="randomPlate()">Generate Random Number</button>
+                    </div>
+
+                    <div class="controls-right">
+                        <div class="control-group">
+                            <label>Plate Code</label>
+                            <input id="plateCode" type="text" placeholder="A" maxlength="3" value="A">
+                        </div>
+
+                        <div class="control-group">
+                            <label>Plate Number</label>
+                            <input id="plateNumber" type="text" placeholder="12345" value="12345">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STYLES = [
+            {id:'s1', name:'Dubai Standard', emirate:'Dubai', borderColor:'#e53935', type: 'dubai-white'},
+            {id:'s2', name:'Abu Dhabi', emirate:'Abu Dhabi', borderColor:'#1A3A6B', type: 'ad-white'},
+            {id:'s3', name:'Sharjah', emirate:'Sharjah', borderColor:'#006400', type: 'shj-white'},
+            {id:'s4', name:'Ajman', emirate:'Ajman', borderColor:'#8B0000', type: 'ajm-white'}
+        ];
+
+        const TEMPLATES = (<%- JSON.stringify(typeof templates !== 'undefined' ? templates : []) %>).map(t => {
+            return {
+                ...t,
+                name: t.type,
+                image: t.media_url,
+                aspect: t.plate_width || 4, // default 4:1
+                corners: t.perspective_coords ? JSON.parse(t.perspective_coords) : [[0,0],[100,0],[100,50],[0,50]]
+            };
+        });
+
+        let currentEmirate = 'Dubai';
+        let currentStyle = STYLES[0];
+        let currentTemplate = null;
+        
+        const mainCanvas = document.getElementById('mainCarCanvas');
+        const mainCtx = mainCanvas.getContext('2d');
+
+        function renderCarGrid() {
+            const grid = document.getElementById('carGrid');
+            grid.innerHTML = '';
+            TEMPLATES.forEach(tmp => {
+                const card = document.createElement('div');
+                card.className = 'car-card' + (currentTemplate && currentTemplate.id === tmp.id ? ' active' : '');
+                card.onclick = () => selectTemplate(tmp, card);
+                card.innerHTML = `
+                    <img src="${tmp.image}" alt="${tmp.name}">
+                    <div class="car-card-info">${tmp.name}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function selectTemplate(tmp, cardEl) {
+            currentTemplate = tmp;
+            
+            // Update UI
+            document.querySelectorAll('.car-card').forEach(c => c.classList.remove('active'));
+            cardEl.classList.add('active');
+            
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('activeCarName').innerText = tmp.name;
+            
+            // Scroll to preview
+            document.getElementById('previewSection').scrollIntoView({ behavior: 'smooth' });
+            
+            updatePreview();
+        }
+
+        function setEmirate(em, btn) {
+            currentEmirate = em;
+            document.querySelectorAll('.etab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentStyle = STYLES.find(s => s.emirate === em) || STYLES[0];
+            updatePreview();
+        }
+
+        let animationFrameId = null;
+
+        function updatePreview() {
+            if (!currentTemplate) return;
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            const isVideo = currentTemplate.media_type === 'video';
+            const mainCanvas = document.getElementById('mainCarCanvas');
+            const previewVideo = document.getElementById('previewVideo');
+            const videoOverlay = document.getElementById('videoOverlay');
+
+            if (isVideo) {
+                mainCanvas.style.display = 'none';
+                previewVideo.style.display = 'block';
+                videoOverlay.style.display = 'block';
+                
+                previewVideo.src = currentTemplate.image;
+                previewVideo.onloadedmetadata = () => {
+                    videoOverlay.width = previewVideo.clientWidth;
+                    videoOverlay.height = previewVideo.clientHeight;
+                    renderVideoOverlay();
+                };
+            } else {
+                mainCanvas.style.display = 'block';
+                previewVideo.style.display = 'none';
+                videoOverlay.style.display = 'none';
+                renderImagePreview();
+            }
+        }
+
+        function renderImagePreview() {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = currentTemplate.image;
+            img.onload = () => {
+                const aspect = img.height / img.width;
+                mainCanvas.height = mainCanvas.width * aspect;
+                mainCtx.drawImage(img, 0, 0, mainCanvas.width, mainCanvas.height);
+                
+                const plateCanvas = document.createElement('canvas');
+                const plateH = 100;
+                const plateW = plateH * (currentTemplate.aspect || 4);
+                plateCanvas.width = plateW; 
+                plateCanvas.height = plateH;
+                drawPlateInternal(plateCanvas, currentStyle, document.getElementById('plateNumber').value, document.getElementById('plateCode').value);
+                
+                const scaleX = mainCanvas.width / img.naturalWidth;
+                const scaleY = mainCanvas.height / img.naturalHeight;
+                const scaledCorners = currentTemplate.corners.map(p => [p[0] * scaleX, p[1] * scaleY]);
+                drawPerspective(mainCtx, plateCanvas, plateW, plateH, scaledCorners);
+            };
+        }
+
+        function renderVideoOverlay() {
+            const video = document.getElementById('previewVideo');
+            const overlay = document.getElementById('videoOverlay');
+            const oCtx = overlay.getContext('2d');
+            
+            const plateCanvas = document.createElement('canvas');
+            const plateH = 100;
+            const plateW = plateH * (currentTemplate.aspect || 4);
+            plateCanvas.width = plateW; 
+            plateCanvas.height = plateH;
+            drawPlateInternal(plateCanvas, currentStyle, document.getElementById('plateNumber').value, document.getElementById('plateCode').value);
+
+            function step() {
+                if (currentTemplate.media_type !== 'video') return;
+                
+                oCtx.clearRect(0, 0, overlay.width, overlay.height);
+                
+                const scaleX = overlay.width / video.videoWidth;
+                const scaleY = overlay.height / video.videoHeight;
+                const scaledCorners = currentTemplate.corners.map(p => [p[0] * scaleX, p[1] * scaleY]);
+                
+                drawPerspective(oCtx, plateCanvas, plateW, plateH, scaledCorners);
+                animationFrameId = requestAnimationFrame(step);
+            }
+            step();
+        }
+
+        function drawPlateInternal(canvas, s, num, code) {
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+            
+            // 1. Base Plate Background
+            const grad = ctx.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, '#fdfdfd');
+            grad.addColorStop(0.2, '#f5f5f5');
+            grad.addColorStop(0.5, '#e0e0e0');
+            grad.addColorStop(1, '#d0d0d0');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, W, H, 8);
+            ctx.fill();
+
+            // 2. Embossed Plate Border
+            ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(2, 2, W-4, H-4);
+            ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(4, 4, W-8, H-8);
+
+            // 3. Emirate Specific Layouts
+            if (s.type === 'dubai-white') {
+                // DUBAI LOGO (Top Center)
+                ctx.textAlign = 'center';
+                // Blue part of Dubai logo
+                ctx.fillStyle = '#00529b';
+                ctx.font = '900 24px "Arial Black", sans-serif';
+                ctx.fillText('DUBAI', W/2, 28);
+                
+                // Red underline/accent for Dubai logo
+                ctx.fillStyle = '#e53935';
+                ctx.fillRect(W/2 - 40, 32, 80, 3);
+
+                // CATEGORY BOX (Left Side)
+                const boxW = 55, boxH = 45;
+                const boxX = 20, boxY = H/2 - boxH/2 + 5;
+                ctx.fillStyle = '#e53935';
+                ctx.beginPath();
+                ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+                ctx.fill();
+                
+                // Code inside box
+                ctx.fillStyle = 'white';
+                ctx.font = '900 32px "Arial Black", sans-serif';
+                ctx.fillText(code.toUpperCase(), boxX + boxW/2, boxY + boxH/2 + 12);
+
+                // NUMBERS (Right Side)
+                ctx.fillStyle = '#111';
+                ctx.font = '900 75px "Arial Black", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(num, 95, H/2 + 25);
+
+            } else if (s.type === 'ad-white') {
+                // ABU DHABI STYLE
+                // Red Bar on Left
+                ctx.fillStyle = '#c62828';
+                ctx.fillRect(10, 10, 60, H-20);
+                
+                ctx.fillStyle = 'white';
+                ctx.font = '900 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('ABU DHABI', 40, H/2 + 5);
+
+                ctx.fillStyle = '#111';
+                ctx.font = '900 70px "Arial Black", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(num, (W+70)/2, H/2 + 25);
+                
+            } else {
+                // Generic style for other emirates
+                const logoW = 85;
+                ctx.fillStyle = s.borderColor;
+                ctx.font = '900 18px "Arial Black", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(s.emirate.toUpperCase(), logoW/2, H/2 + 7);
+                
+                ctx.fillStyle = '#111';
+                ctx.textAlign = 'center';
+                ctx.font = '900 32px "Arial Black", sans-serif';
+                ctx.fillText(code.toUpperCase(), logoW + 45, H/2 + 15);
+                ctx.font = '900 70px "Arial Black", sans-serif';
+                ctx.fillText(num, logoW + 200, H/2 + 25);
+            }
+
+            // 4. Stamping Effect (Inner shadows for text)
+            ctx.shadowColor = 'rgba(255,255,255,0.4)';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+
+            // 5. Environmental Effects
+            // Gloss streak
+            const shine = ctx.createLinearGradient(0, 0, W, H);
+            shine.addColorStop(0, 'rgba(255,255,255,0)');
+            shine.addColorStop(0.5, 'rgba(255,255,255,0.15)');
+            shine.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = shine;
+            ctx.beginPath();
+            ctx.moveTo(W*0.3, 0); ctx.lineTo(W*0.6, 0); ctx.lineTo(W*0.4, H); ctx.lineTo(W*0.1, H);
+            ctx.fill();
+        }
+
+        function drawPerspective(ctx, img, srcW, srcH, dst) {
+            const [p0, p1, p2, p3] = dst;
+            
+            // We use a homography (perspective transform) instead of two affine triangles
+            // for better realism and perfect alignment with the 4 points.
+            
+            function getTransform(src, dst) {
+                const matrix = [];
+                for (let i = 0; i < 4; i++) {
+                    const [sx, sy] = src[i];
+                    const [dx, dy] = dst[i];
+                    matrix.push([sx, sy, 1, 0, 0, 0, -sx * dx, -sy * dx, dx]);
+                    matrix.push([0, 0, 0, sx, sy, 1, -sx * dy, -sy * dy, dy]);
+                }
+                
+                // Solve the system using Gaussian elimination
+                const n = 8;
+                const a = matrix.map(row => row.slice(0, 8));
+                const b = matrix.map(row => row[8]);
+                
+                for (let i = 0; i < n; i++) {
+                    let max = i;
+                    for (let j = i + 1; j < n; j++) {
+                        if (Math.abs(a[j][i]) > Math.abs(a[max][i])) max = j;
+                    }
+                    [a[i], a[max]] = [a[max], a[i]];
+                    [b[i], b[max]] = [b[max], b[i]];
+                    
+                    for (let j = i + 1; j < n; j++) {
+                        const factor = a[j][i] / a[i][i];
+                        b[j] -= factor * b[i];
+                        for (let k = i; k < n; k++) a[j][k] -= factor * a[i][k];
+                    }
+                }
+                
+                const x = new Array(n);
+                for (let i = n - 1; i >= 0; i--) {
+                    let sum = 0;
+                    for (let j = i + 1; j < n; j++) sum += a[i][j] * x[j];
+                    x[i] = (b[i] - sum) / a[i][i];
+                }
+                return [...x, 1];
+            }
+
+            const h = getTransform(
+                [[0, 0], [srcW, 0], [srcW, srcH], [0, srcH]],
+                [p0, p1, p2, p3]
+            );
+
+            // Since Canvas2D doesn't support 3x3 matrices directly, 
+            // we use a workaround by drawing small chunks or using a shader-like approach.
+            // However, for performance and simplicity in standard Canvas2D, 
+            // we'll use a subdivided mesh (8x8) of affine transforms.
+            
+            const div = 8;
+            for (let y = 0; y < div; y++) {
+                for (let x = 0; x < div; x++) {
+                    const s0 = [x * srcW / div, y * srcH / div];
+                    const s1 = [(x + 1) * srcW / div, y * srcH / div];
+                    const s2 = [(x + 1) * srcW / div, (y + 1) * srcH / div];
+                    const s3 = [x * srcW / div, (y + 1) * srcH / div];
+
+                    const project = (p) => {
+                        const w = h[6] * p[0] + h[7] * p[1] + 1;
+                        return [
+                            (h[0] * p[0] + h[1] * p[1] + h[2]) / w,
+                            (h[3] * p[0] + h[4] * p[1] + h[5]) / w
+                        ];
+                    };
+
+                    const d0 = project(s0);
+                    const d1 = project(s1);
+                    const d2 = project(s2);
+                    const d3 = project(s3);
+
+                    // Draw two triangles for this cell
+                    drawTriangle(ctx, img, s0, s1, s3, d0, d1, d3);
+                    drawTriangle(ctx, img, s1, s2, s3, d1, d2, d3);
+                }
+            }
+        }
+
+        function drawTriangle(ctx, img, s0, s1, s2, d0, d1, d2) {
+            const det = (s1[0] - s0[0]) * (s2[1] - s0[1]) - (s2[0] - s0[0]) * (s1[1] - s0[1]);
+            if (Math.abs(det) < 1e-6) return;
+            
+            const a = ((d1[0] - d0[0]) * (s2[1] - s0[1]) - (d2[0] - d0[0]) * (s1[1] - s0[1])) / det;
+            const b = ((d2[0] - d0[0]) * (s1[0] - s0[0]) - (d1[0] - d0[0]) * (s2[0] - s0[0])) / det;
+            const c = ((d1[1] - d0[1]) * (s2[1] - s0[1]) - (d2[1] - d0[1]) * (s1[1] - s0[1])) / det;
+            const d = ((d2[1] - d0[1]) * (s1[0] - s0[0]) - (d1[1] - d0[1]) * (s2[0] - s0[0])) / det;
+            const e = d0[0] - a * s0[0] - b * s0[1];
+            const f = d0[1] - c * s0[0] - d * s0[1];
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(d0[0], d0[1]);
+            ctx.lineTo(d1[0], d1[1]);
+            ctx.lineTo(d2[0], d2[1]);
+            ctx.closePath();
+            ctx.clip();
+            ctx.transform(a, c, b, d, e, f);
+            ctx.drawImage(img, 0, 0);
+            ctx.restore();
+        }
+
+        function randomPlate() {
+            document.getElementById('plateNumber').value = Math.floor(1000 + Math.random() * 90000);
+            document.getElementById('plateCode').value = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+            updatePreview();
+        }
+
+        document.getElementById('plateNumber').oninput = updatePreview;
+        document.getElementById('plateCode').oninput = updatePreview;
+        
+        function downloadImage() {
+            if (!currentTemplate) return;
+            
+            // Create a temporary canvas to add watermark
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = mainCanvas.width;
+            tempCanvas.height = mainCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            // Draw current preview
+            tempCtx.drawImage(mainCanvas, 0, 0);
+            
+            // Add Watermark
+            const watermarkText = "PLATES.AE";
+            tempCtx.font = "bold 30px Arial";
+            tempCtx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            tempCtx.textAlign = "right";
+            tempCtx.shadowColor = "rgba(0, 0, 0, 0.5)";
+            tempCtx.shadowBlur = 4;
+            
+            // Bottom Right position
+            tempCtx.fillText(watermarkText, tempCanvas.width - 30, tempCanvas.height - 30);
+            
+            // Trigger download
+            const link = document.createElement('a');
+            link.download = `plate-preview-${Date.now()}.png`;
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        window.onload = () => {
+            renderCarGrid();
+        };
+    </script>
+</body>
+</html>
+</body>
+</html>

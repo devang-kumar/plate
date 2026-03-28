@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - PLATES.AE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #e53935;
+            --bg-gray: #e0e0e0;
+            --text-dark: #333;
+            --white: #ffffff;
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg-gray); }
+        .logo-container { background: white; padding: 20px 10%; display: flex; justify-content: center; align-items: center; }
+        .logo { border: 2px solid var(--primary-red); padding: 5px 15px; font-size: 32px; font-weight: bold; color: var(--primary-red); text-decoration: none; }
+        .main-nav { background: var(--primary-red); padding: 15px 10%; display: flex; justify-content: flex-end; }
+        .main-nav a { color: white; text-decoration: none; margin-left: 20px; font-size: 14px; }
+        .container { max-width: 1200px; margin: 40px auto; padding: 30px; background: white; border-radius: 8px; min-height: 400px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h1 { color: var(--primary-red); }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <a href="/" class="logo">PLATES.AE</a>
+    </div>
+    <nav class="main-nav">
+        <a href="/">Home</a>
+        <a href="/terms">Terms</a>
+        <a href="/sell">Sell</a>
+        <a href="/how-to-buy">How to Buy</a>
+        <a href="/faq">FAQ</a>
+    </nav>
+    <div class="container">
+        <h1><%= title %></h1>
+        <p>This is the <%= title %> page. Content coming soon.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Listings - Plate Generator System</title>
+    <link rel="stylesheet" href="/css/admin.css">
+    <style>
+        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+    <div class="sidebar">
+        <h2>Control Panel</h2>
+        <a href="/admin/dashboard">Dashboard View</a>
+        <a href="/admin/emirates">Emirates & Styles</a>
+        <a href="/admin/templates">Media Templates</a>
+        <a href="/admin/listings" class="active">Plate Listings</a>
+        <a href="/admin/logout" class="logout">Secure Logout</a>
+    </div>
+    <div class="main-content">
+        <div class="card">
+            <h2>Publish Public Plate Registration</h2>
+            <form action="/admin/listings/add" method="POST">
+                <div class="grid-form">
+                    <div class="form-group">
+                        <label>Origin Authority</label>
+                        <select name="emirate_id" required>
+                            <option value="">-- Specify Authority --</option>
+                            <% emirates.forEach(function(em) { %>
+                                <option value="<%= em.id %>"><%= em.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Category Code</label>
+                        <input type="text" name="plate_code" placeholder="e.g. A, B, M" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Assigned Registration Number</label>
+                        <input type="number" name="plate_number" placeholder="e.g. 12345" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Assessed Value (AED)</label>
+                        <input type="number" name="price" placeholder="e.g. 150000" required>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Authorized Contact Profile</label>
+                        <input type="text" name="contact_info" placeholder="Phone or Email Data" required>
+                    </div>
+                </div>
+                <button type="submit">Establish Public Listing</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>Live Marketplace Placements</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Identifier Code</th>
+                        <th>Origin</th>
+                        <th>Designation</th>
+                        <th>Market Value</th>
+                        <th style="width: 100px;">Modify</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(listings.length > 0) { %>
+                        <% listings.forEach(function(listing) { %>
+                            <tr>
+                                <td>#<%= listing.id %></td>
+                                <td><%= listing.emirate_name %></td>
+                                <td style="font-size: 1.1rem; color: #111;"><strong><%= listing.plate_code %> - <%= listing.plate_number %></strong></td>
+                                <td style="color: #27ae60; font-weight: bold;">AED <%= listing.price != null ? Number(listing.price).toLocaleString() : 'N/A' %></td>
+                                <td>
+                                    <form class="inline" action="/admin/listings/delete/<%= listing.id %>" method="POST">
+                                        <button class="btn-danger" type="submit" onclick="return confirm('Immediately revoke this public listing?');">Revoke</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="5" style="text-align: center; color: #777; padding: 30px;">There are currently zero public plate listings.</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

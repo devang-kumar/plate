@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Templates - Plate Generator System</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+    <div class="sidebar">
+        <h2>Control Panel</h2>
+        <a href="/admin/dashboard">Dashboard View</a>
+        <a href="/admin/emirates">Emirates & Styles</a>
+        <a href="/admin/templates" class="active">Media Templates</a>
+        <a href="/admin/listings">Plate Listings</a>
+        <a href="/admin/logout" class="logout">Secure Logout</a>
+    </div>
+    <div class="main-content">
+        <div class="card">
+            <h2>Upload Visual Template</h2>
+            <form action="/admin/templates/add" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Media Format</label>
+                    <select name="type" required>
+                        <option value="image">Static Image / Photo</option>
+                        <option value="video">Moving Video Sequence</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Upload Media File (Car/Bike Environment)</label>
+                    <input type="file" name="media_file" accept="image/*,video/*" required>
+                </div>
+                <div class="form-group" style="display: none;">
+                    <label>Perspective Matrix (Auto-generated representation of the plate area)</label>
+                    <input type="text" name="perspective_coords" placeholder="[[x,y],[x,y],...]">
+                </div>
+                <button type="submit">Publish Template Pipeline</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>Active Templates System</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Registration #</th>
+                        <th>Format Type</th>
+                        <th>File Resource</th>
+                        <th style="width: 100px;">Control</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(templates.length > 0) { %>
+                        <% templates.forEach(function(template) { %>
+                            <tr>
+                                <td>#<%= template.id %></td>
+                                <td><span style="background: #eef; padding: 4px 8px; border-radius: 4px; font-weight: 500; font-size: 0.85rem;"><%= template.type.toUpperCase() %></span></td>
+                                <td><a href="<%= template.media_url %>" target="_blank" style="color: #0066cc;">View Asset &#8599;</a></td>
+                                <td>
+                                    <form class="inline" action="/admin/templates/delete/<%= template.id %>" method="POST">
+                                        <button class="btn-danger" type="submit" onclick="return confirm('Purge this template from the system entirely?');">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="4" style="text-align: center; color: #777; padding: 30px;">System empty. Please prepare media templates.</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

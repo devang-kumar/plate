@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Emirates - Plate Generator System</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+    <div class="admin-layout">
+    <div class="sidebar">
+        <h2>Control Panel</h2>
+        <a href="/admin/dashboard">Dashboard View</a>
+        <a href="/admin/emirates" class="active">Emirates & Styles</a>
+        <a href="/admin/templates">Media Templates</a>
+        <a href="/admin/listings">Plate Listings</a>
+        <a href="/admin/logout" class="logout">Secure Logout</a>
+    </div>
+    <div class="main-content">
+        <div class="card">
+            <h2>Add New Emirate</h2>
+            <form action="/admin/emirates/add" method="POST">
+                <div class="form-group">
+                    <label>Emirate Location Name</label>
+                    <input type="text" name="name" placeholder="e.g. Dubai" required>
+                </div>
+                <div class="form-group">
+                    <label>Logo File URL (Optional for display)</label>
+                    <input type="text" name="logo_url" placeholder="https://...">
+                </div>
+                <button type="submit">Publish Emirate</button>
+            </form>
+        </div>
+        
+        <div class="card">
+            <h2>Registered Emirates Database</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Reg</th>
+                        <th>Name</th>
+                        <th>Resource URL</th>
+                        <th style="width: 100px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if(emirates.length > 0) { %>
+                        <% emirates.forEach(function(emirate) { %>
+                            <tr>
+                                <td>#<%= emirate.id %></td>
+                                <td><strong><%= emirate.name %></strong></td>
+                                <td style="color: #888;"><%= emirate.logo_url || 'N/A' %></td>
+                                <td>
+                                    <form class="inline" action="/admin/emirates/delete/<%= emirate.id %>" method="POST">
+                                        <button class="btn-danger" type="submit" onclick="return confirm('Confirm deletion of this record?');">Remove</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr><td colspan="4" style="text-align: center; color: #777; padding: 30px;">Database empty. No records found.</td></tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    </div>
+</body>
+
+</html>
+

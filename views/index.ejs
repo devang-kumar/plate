@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dubai car license plates for sale | Call 0509080500</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0;
+            background-color: #d8d8d8;
+            color: #333;
+        }
+
+        /* ---- TOP HEADER: Logo center, contact right ---- */
+        .top-header {
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 20px;
+            position: relative;
+            border-bottom: 1px solid #ddd;
+        }
+        .top-contact {
+            position: absolute;
+            right: 20px;
+            font-size: 12px;
+            color: #555;
+        }
+        .logo {
+            border: 2px solid #c0392b;
+            padding: 4px 14px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #c0392b;
+            text-decoration: none;
+            letter-spacing: 2px;
+            font-family: Arial, sans-serif;
+        }
+
+        /* ---- NAVIGATION ---- */
+        .main-nav {
+            background: #cc2222;
+            padding: 0;
+        }
+        .main-nav-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 6px 20px;
+            flex-wrap: wrap;
+            gap: 0;
+        }
+        .main-nav-row a {
+            color: white;
+            text-decoration: none;
+            padding: 4px 10px;
+            font-size: 13px;
+        }
+        .main-nav-row a:hover {
+            text-decoration: underline;
+        }
+        .nav-row-2 {
+            justify-content: center;
+            border-top: 1px solid rgba(255,255,255,0.25);
+            padding: 4px 20px;
+        }
+
+        /* ---- MAIN CONTENT ---- */
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 15px 10px;
+        }
+
+        .section-title {
+            text-align: center;
+            color: #444;
+            font-size: 14px;
+            margin-bottom: 12px;
+            font-weight: normal;
+        }
+
+        /* ---- SERVICE CARDS ---- */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .service-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px 10px 12px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            display: block;
+            transition: box-shadow 0.2s;
+        }
+        .service-card:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+        .service-card img {
+            width: 130px;
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .service-card h3 {
+            margin: 0;
+            font-size: 13px;
+            font-weight: normal;
+            color: #444;
+        }
+
+        /* ---- VIEW ALL + PAINTINGS BADGE ---- */
+        .listings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .view-all-link {
+            font-size: 13px;
+            color: #333;
+            text-decoration: none;
+            font-style: italic;
+        }
+        .view-all-link:hover { text-decoration: underline; }
+        .paintings-badge {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+        }
+        .badge-red {
+            background: #cc2222;
+            color: white;
+            padding: 2px 6px;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+        .badge-count {
+            background: #555;
+            color: white;
+            padding: 2px 6px;
+            font-size: 12px;
+            border-radius: 2px;
+        }
+
+        /* ---- PLATE LISTINGS ---- */
+        .plates-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .plate-item {
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            padding: 6px 8px 6px;
+        }
+
+        /* UAE plate visual */
+        .plate-visual {
+            width: 100%;
+            height: 58px;
+            border: 2px solid #aaa;
+            border-radius: 3px;
+            display: flex;
+            overflow: hidden;
+            margin-bottom: 4px;
+            background: white;
+        }
+        .plate-left-panel {
+            width: 52px;
+            flex-shrink: 0;
+            border-right: 1px solid #bbb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            background: white;
+        }
+        .plate-emirate-code {
+            font-size: 9px;
+            color: #333;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 2px;
+            font-family: Arial, sans-serif;
+        }
+        .plate-dubai-word {
+            font-size: 11px;
+            font-weight: 900;
+            background: linear-gradient(to bottom, #00a8cc 50%, #e91e8c 50%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Arial Black', sans-serif;
+            line-height: 1;
+            letter-spacing: 0.5px;
+        }
+        .plate-right-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 900;
+            color: #111;
+            font-family: 'Arial Black', Gadget, sans-serif;
+            letter-spacing: 3px;
+        }
+        .plate-code-ltr {
+            font-size: 20px;
+            font-weight: 400;
+            color: #555;
+            margin-right: 8px;
+        }
+
+        /* Plate meta info row */
+        .plate-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+        }
+        .plate-phone-num {
+            color: #cc2222;
+            font-weight: bold;
+        }
+        .plate-price-val {
+            color: #cc2222;
+            font-weight: bold;
+        }
+
+        /* ---- VIEW ALL PAINTINGS BUTTON ---- */
+        .view-all-paintings {
+            display: block;
+            width: 100%;
+            background: #cc2222;
+            color: white;
+            text-align: center;
+            padding: 12px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 3px;
+            margin-top: 5px;
+        }
+        .view-all-paintings:hover {
+            background: #aa1111;
+        }
+
+        @media (max-width: 480px) {
+            .services-grid, .plates-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP HEADER -->
+    <div class="top-header">
+        <a href="/" class="logo">PLATES.AE</a>
+        <div class="top-contact">0509080500 &nbsp; uaeplate10@gmail.com</div>
+    </div>
+
+    <!-- NAVIGATION -->
+    <nav class="main-nav">
+        <div class="main-nav-row">
+            <a href="/terms">Terms and Conditions</a>
+            <a href="/sell">Sell your number</a>
+            <a href="/how-to-buy">How to buy</a>
+            <a href="/faq">Frequently Asked Questions</a>
+            <a href="/drawing">drawing numbers</a>
+            <a href="/paintings">paintings</a>
+            <a href="/">Home</a>
+            <a href="/" style="font-size: 16px; padding-left: 8px;">🇬🇧</a>
+        </div>
+        <div class="main-nav-row nav-row-2">
+            <a href="/contact">communication</a>
+            <a href="/about">About the company</a>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+
+        <!-- SERVICES -->
+        <p class="section-title">Services</p>
+        <div class="services-grid">
+            <a href="/listings" class="service-card">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Ferrari_458_Spider_%288353675715%29.jpg/320px-Ferrari_458_Spider_%288353675715%29.jpg" 
+                     alt="Dubai number plates"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <i class="fa-solid fa-car" style="display:none; font-size:50px; color:#cc2222; margin-bottom:10px;"></i>
+                <h3>Dubai number plates</h3>
+            </a>
+            <a href="/buy-tablet" class="service-card">
+                <img src="https://www.12345.ae/themes/plates_ae/img/main_slider/slider3.png"
+                     alt="Buy a tablet online"
+                     onerror="this.src='https://placehold.co/130x90/eef/0066cc?text=12345.AE'">
+                <h3>Buy a tablet online</h3>
+            </a>
+            <a href="/drawing" class="service-card">
+                <img src="https://www.12345.ae/themes/plates_ae/img/icons/drawing.png"
+                     alt="drawing numbers"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <i class="fa-solid fa-pen-ruler" style="display:none; font-size:50px; color:#555; margin-bottom:10px;"></i>
+                <h3>drawing numbers</h3>
+            </a>
+            <a href="/sell" class="service-card">
+                <img src="https://www.12345.ae/themes/plates_ae/img/icons/sell.png"
+                     alt="Sell your number"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+                <i class="fa-solid fa-hand-holding-dollar" style="display:none; font-size:50px; color:#2e7d32; margin-bottom:10px;"></i>
+                <h3>Sell your number</h3>
+            </a>
+        </div>
+
+        <!-- VIEW ALL + PAINTINGS BADGE -->
+        <div class="listings-header">
+            <a href="/listings" class="view-all-link">View all</a>
+            <div class="paintings-badge">
+                <span class="badge-red">paintings</span>
+                <span class="badge-count"><%= listings ? listings.length : 0 %></span>
+            </div>
+        </div>
+
+        <!-- PLATE LISTINGS -->
+        <div class="plates-grid">
+            <% if(listings && listings.length > 0) { %>
+                <% listings.forEach(function(listing) { %>
+                    <div class="plate-item">
+                        <div class="plate-visual">
+                            <div class="plate-left-panel">
+                                <span class="plate-emirate-code"><%= (listing.emirate_name || 'Dubai').substring(0,3).toUpperCase() %></span>
+                                <span class="plate-dubai-word">DUBAI</span>
+                            </div>
+                            <div class="plate-right-panel">
+                                <span class="plate-code-ltr"><%= listing.plate_code %></span>
+                                <span><%= listing.plate_number %></span>
+                            </div>
+                        </div>
+                        <div class="plate-meta">
+                            <span class="plate-phone-num"><%= listing.contact_info || '0509080500' %></span>
+                            <span class="plate-price-val">AED <%= (listing.price || 0).toLocaleString() %></span>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p style="grid-column:1/-1; text-align:center; padding:20px; color:#777;">No plates listed yet.</p>
+            <% } %>
+        </div>
+
+        <!-- VIEW ALL PAINTINGS -->
+        <a href="/paintings" class="view-all-paintings">View all paintings</a>
+
+    </div>
+
+    <!-- Also register contact/about routes as simple placeholders -->
+    <script>
+        // Handle image fallback gracefully
+        document.querySelectorAll('.service-card img').forEach(img => {
+            img.addEventListener('error', function() {
+                this.style.display = 'none';
+                const nextEl = this.nextElementSibling;
+                if (nextEl) nextEl.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>

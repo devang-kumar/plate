@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PLATES.AE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-red: #e53935;
+            --bg-gray: #f4f4f4;
+            --sidebar-bg: #2c3e50;
+            --white: #ffffff;
+        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: var(--bg-gray); display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 250px; background: var(--sidebar-bg); color: white; padding-top: 20px; flex-shrink: 0; }
+        .sidebar-header { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .sidebar-nav a { display: block; padding: 15px 20px; color: #ecf0f1; text-decoration: none; transition: 0.3s; }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(255,255,255,0.1); border-left: 4px solid var(--primary-red); }
+        
+        .main-content { flex-grow: 1; padding: 40px; overflow-y: auto; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .card-header h2 { margin: 0; color: #333; font-size: 22px; }
+
+        .btn { padding: 10px 20px; border-radius: 4px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; text-decoration: none; display: inline-block; }
+        .btn-primary { background: var(--primary-red); color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+
+        .grid-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .item-card { background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden; position: relative; }
+        .item-img { width: 100%; height: 160px; object-fit: cover; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #999; }
+        .item-img:before { content: 'Image not found'; display: block; }
+        .item-img[src^="http"], .item-img[src^="/uploads"] { font-size: 0; }
+        .item-img[src^="http"]:before, .item-img[src^="/uploads"]:before { content: none; }
+        .item-details { padding: 15px; }
+        .item-title { font-weight: bold; margin-bottom: 10px; display: block; }
+        .item-actions { display: flex; gap: 10px; margin-top: 10px; }
+
+        /* Modal / Form Styles */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 30px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+
+        /* Coordinate Picker */
+        #coord-picker-container { 
+            position: relative; 
+            display: inline-block; 
+            margin-top: 10px; 
+            cursor: crosshair;
+            background: #eee;
+            border: 1px solid #ddd;
+        }
+        #coord-picker-img { 
+            max-width: 100%; 
+            display: block; 
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        #points-display {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .coord-point { 
+            position: absolute; 
+            width: 8px; 
+            height: 8px; 
+            background: #00ff00; 
+            border-radius: 50%; 
+            transform: translate(-50%, -50%); 
+            border: 2px solid #000; 
+            box-shadow: 0 0 5px rgba(255,255,255,0.8); 
+            z-index: 10;
+        }
+        .coord-label { 
+            position: absolute; 
+            background: rgba(0,0,0,0.7); 
+            color: #00ff00; 
+            padding: 2px 6px; 
+            font-size: 10px; 
+            border-radius: 3px; 
+            transform: translate(-50%, -100%); 
+            margin-top: -8px; 
+            white-space: nowrap;
+            z-index: 11;
+        }
+        /* Highlight line between points */
+        #coord-preview-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+    </style>
+</head>
+<body>
+    <% 
+    // Explicitly define all locals with clear fallback values
+    const activeSection = locals.section || 'templates';
+    const activeTemplates = locals.templates || [];
+    const activeListings = locals.listings || [];
+    const activeEmirates = locals.emirates || [];
+    %>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1 style="font-size: 20px; color: var(--primary-red); margin: 0;">PLATES.AE Admin</h1>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="/admin-dashboard?section=templates" class="<%= activeSection === 'templates' ? 'active' : '' %>"><i class="fa-solid fa-car"></i> Car Templates</a>
+            <a href="/admin-dashboard?section=listings" class="<%= activeSection === 'listings' ? 'active' : '' %>"><i class="fa-solid fa-list"></i> Plate Listings</a>
+            <a href="/admin-dashboard?section=emirates" class="<%= activeSection === 'emirates' ? 'active' : '' %>"><i class="fa-solid fa-globe"></i> Emirates</a>
+            <a href="/"><i class="fa-solid fa-eye"></i> View Site</a>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <% if (activeSection === 'templates') { %>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Manage Car & Bike Templates</h2>
+                    <button class="btn btn-primary" onclick="openModal('carModal')">Add New Template</button>
+                </div>
+                <div class="grid-list">
+                    <% activeTemplates.forEach(function(tmp) { %>
+                        <div class="item-card">
+                            <% if (tmp.media_type === 'video') { %>
+                                <video src="<%= tmp.media_url %>" class="item-img" muted></video>
+                            <% } else { %>
+                                <img src="<%= tmp.media_url %>" class="item-img" alt="Car template">
+                            <% } %>
+                            <div class="item-details">
+                                <span class="item-title"><%= tmp.type %> (<%= tmp.media_type || 'image' %>)</span>
+                                <div class="item-actions">
+                                    <button class="btn btn-success" style="padding: 5px 10px; font-size: 12px;" onclick="editCar(<%= JSON.stringify(tmp) %>)">Edit</button>
+                                    <form action="/admin/templates/delete" method="POST" style="display:inline;">
+                                        <input type="hidden" name="id" value="<%= tmp.id %>">
+                                        <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="return confirm('Delete this template?')">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        <% } else if (activeSection === 'listings') { %>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Manage Plate Listings</h2>
+                    <button class="btn btn-primary" onclick="openListingModal()">Add New Listing</button>
+                </div>
+                <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                    <thead>
+                        <tr style="background: #f8f9fa; border-bottom: 2px solid #eee;">
+                            <th style="padding: 12px; text-align: left;">Plate</th>
+                            <th style="padding: 12px; text-align: left;">Emirate</th>
+                            <th style="padding: 12px; text-align: left;">Price</th>
+                            <th style="padding: 12px; text-align: left;">Contact</th>
+                            <th style="padding: 12px; text-align: left;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% activeListings.forEach(function(listing) { %>
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 12px;"><strong><%= listing.plate_code %> <%= listing.plate_number %></strong></td>
+                                <td style="padding: 12px;"><%= listing.emirate_name %></td>
+                                <td style="padding: 12px;">AED <%= (listing.price || 0).toLocaleString() %></td>
+                                <td style="padding: 12px;"><%= listing.contact_info %></td>
+                                <td style="padding: 12px;">
+                                    <button class="btn btn-success" style="padding: 5px 10px; font-size: 12px;" onclick="editListing(<%= JSON.stringify(listing) %>)">Edit</button>
+                                    <form action="/admin/listings/delete" method="POST" style="display:inline;">
+                                        <input type="hidden" name="id" value="<%= listing.id %>">
+                                        <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="return confirm('Delete this listing?')">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else if (activeSection === 'emirates') { %>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Manage Emirates</h2>
+                    <button class="btn btn-primary" onclick="openEmirateModal()">Add New Emirate</button>
+                </div>
+                <div class="grid-list">
+                    <% activeEmirates.forEach(function(em) { %>
+                        <div class="item-card" style="padding: 20px; text-align: center;">
+                            <span class="item-title" style="font-size: 18px;"><%= em.name %></span>
+                            <div class="item-actions" style="justify-content: center;">
+                                <button class="btn btn-success" style="padding: 5px 10px; font-size: 12px;" onclick="editEmirate(<%= JSON.stringify(em) %>)">Edit</button>
+                                <form action="/admin/emirates/delete" method="POST" style="display:inline;">
+                                    <input type="hidden" name="id" value="<%= em.id %>">
+                                    <button type="submit" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="return confirm('Delete this emirate?')">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Car Template Modal -->
+    <div id="carModal" class="modal">
+        <div class="modal-content">
+            <div class="card-header">
+                <h2 id="modalTitle">Add Car Template</h2>
+                <span style="cursor:pointer; font-size: 24px;" onclick="closeModal('carModal')">&times;</span>
+            </div>
+            <form action="/admin/templates/save" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="id" id="carId">
+                <div class="form-group">
+                    <label>Template Name / Model</label>
+                    <input type="text" name="type" id="carType" placeholder="e.g. White Sedan Front" required>
+                </div>
+                <div class="form-group">
+                    <label>Template Media Type</label>
+                    <select name="media_type" id="carMediaType" onchange="toggleMediaInput(this.value)">
+                        <option value="image">Image (Car/Bike Photo)</option>
+                        <option value="video">Video (Moving Car)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Image/Video Upload (Recommended)</label>
+                    <input type="file" name="media_file" id="mediaFileInput" accept="image/*,video/*" onchange="previewMediaFile(this)">
+                </div>
+                <div class="form-group">
+                    <label>OR Media URL</label>
+                    <input type="text" name="media_url" id="carMediaUrl" placeholder="https://..." oninput="loadPreviewMedia(this.value)">
+                </div>
+                
+                <div class="form-group">
+                    <label>Plate Aspect Ratio (Width:Height)</label>
+                    <select name="aspect_ratio" id="plateAspect" style="margin-bottom: 10px;">
+                        <option value="4">4:1 (Standard Long)</option>
+                        <option value="2">2:1 (Square/Motorcycle)</option>
+                        <option value="3.5">3.5:1 (Custom)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label id="coordLabel">Click on the image/video below to define the 4 corners of the plate (TL, TR, BR, BL)</label>
+                    <div id="coord-picker-container" onclick="handleCoordClick(event)">
+                        <img id="coord-picker-img" src="" alt="Load media to start picking coordinates" style="min-height: 200px;">
+                        <video id="coord-picker-video" style="display:none; max-width: 100%;" muted loop></video>
+                        <svg id="coord-preview-svg"></svg>
+                        <div id="points-display"></div>
+                    </div>
+                    <input type="hidden" name="perspective_coords" id="carCoords">
+                </div>
+
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="button" class="btn btn-danger" onclick="resetCoords()">Reset Points</button>
+                    <button type="submit" class="btn btn-primary">Save Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Emirate Modal -->
+    <div id="emirateModal" class="modal">
+        <div class="modal-content">
+            <div class="card-header">
+                <h2 id="emirateModalTitle">Add Emirate</h2>
+                <span style="cursor:pointer; font-size: 24px;" onclick="closeModal('emirateModal')">&times;</span>
+            </div>
+            <form action="/admin/emirates/save" method="POST">
+                <input type="hidden" name="id" id="emirateId">
+                <div class="form-group">
+                    <label>Emirate Name</label>
+                    <input type="text" name="name" id="emirateName" placeholder="e.g. Dubai" required>
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Save Emirate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Listing Modal -->
+    <div id="listingModal" class="modal">
+        <div class="modal-content">
+            <div class="card-header">
+                <h2 id="listingModalTitle">Add Plate Listing</h2>
+                <span style="cursor:pointer; font-size: 24px;" onclick="closeModal('listingModal')">&times;</span>
+            </div>
+            <form action="/admin/listings/save" method="POST">
+                <input type="hidden" name="id" id="listingId">
+                <div class="form-group">
+                    <label>Plate Code</label>
+                    <input type="text" name="plate_code" id="listingCode" placeholder="A" required>
+                </div>
+                <div class="form-group">
+                    <label>Plate Number</label>
+                    <input type="text" name="plate_number" id="listingNumber" placeholder="12345" required>
+                </div>
+                <div class="form-group">
+                    <label>Emirate</label>
+                    <select name="emirate_id" id="listingEmirate" required>
+                        <% activeEmirates.forEach(function(em) { %>
+                            <option value="<%= em.id %>"><%= em.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Price (AED)</label>
+                    <input type="number" name="price" id="listingPrice" placeholder="50000" required>
+                </div>
+                <div class="form-group">
+                    <label>Contact Info</label>
+                    <input type="text" name="contact_info" id="listingContact" placeholder="050xxxxxxx" required>
+                </div>
+                <div style="text-align: right; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Save Listing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        console.log("Admin Panel Loaded. Active Section:", "<%= activeSection %>");
+        let selectedPoints = [];
+        const pointLabels = ['Top-Left', 'Top-Right', 'Bottom-Right', 'Bottom-Left'];
+
+        function openModal(id) {
+            document.getElementById(id).style.display = 'flex';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+            resetCoords();
+        }
+
+        function openListingModal() {
+            document.getElementById('listingModalTitle').innerText = 'Add Plate Listing';
+            document.getElementById('listingId').value = '';
+            document.getElementById('listingCode').value = '';
+            document.getElementById('listingNumber').value = '';
+            document.getElementById('listingPrice').value = '';
+            document.getElementById('listingContact').value = '';
+            openModal('listingModal');
+        }
+
+        function editListing(listing) {
+            document.getElementById('listingModalTitle').innerText = 'Edit Plate Listing';
+            document.getElementById('listingId').value = listing.id;
+            document.getElementById('listingCode').value = listing.plate_code;
+            document.getElementById('listingNumber').value = listing.plate_number;
+            document.getElementById('listingEmirate').value = listing.emirate_id;
+            document.getElementById('listingPrice').value = listing.price;
+            document.getElementById('listingContact').value = listing.contact_info;
+            openModal('listingModal');
+        }
+
+        function openEmirateModal() {
+            document.getElementById('emirateModalTitle').innerText = 'Add Emirate';
+            document.getElementById('emirateId').value = '';
+            document.getElementById('emirateName').value = '';
+            openModal('emirateModal');
+        }
+
+        function editEmirate(em) {
+            document.getElementById('emirateModalTitle').innerText = 'Edit Emirate';
+            document.getElementById('emirateId').value = em.id;
+            document.getElementById('emirateName').value = em.name;
+            openModal('emirateModal');
+        }
+
+        function toggleMediaInput(type) {
+            const img = document.getElementById('coord-picker-img');
+            const video = document.getElementById('coord-picker-video');
+            if (type === 'video') {
+                img.style.display = 'none';
+                video.style.display = 'block';
+            } else {
+                img.style.display = 'block';
+                video.style.display = 'none';
+            }
+            resetCoords();
+        }
+
+        function loadPreviewMedia(url) {
+            const type = document.getElementById('carMediaType').value;
+            const img = document.getElementById('coord-picker-img');
+            const video = document.getElementById('coord-picker-video');
+            
+            if (type === 'video') {
+                video.src = url;
+                video.play();
+            } else {
+                img.src = url;
+            }
+            resetCoords();
+        }
+
+        function previewMediaFile(input) {
+            const type = document.getElementById('carMediaType').value;
+            const img = document.getElementById('coord-picker-img');
+            const video = document.getElementById('coord-picker-video');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (type === 'video') {
+                        video.src = e.target.result;
+                        video.play();
+                    } else {
+                        img.src = e.target.result;
+                    }
+                    resetCoords();
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function handleCoordClick(e) {
+            if (selectedPoints.length >= 4) return;
+
+            const type = document.getElementById('carMediaType').value;
+            const media = type === 'video' ? document.getElementById('coord-picker-video') : document.getElementById('coord-picker-img');
+            const rect = media.getBoundingClientRect();
+            
+            const displayX = e.clientX - rect.left;
+            const displayY = e.clientY - rect.top;
+            
+            if (displayX < 0 || displayY < 0 || displayX > rect.width || displayY > rect.height) return;
+
+            const naturalWidth = type === 'video' ? media.videoWidth : media.naturalWidth;
+            const naturalHeight = type === 'video' ? media.videoHeight : media.naturalHeight;
+
+            const x = (displayX / rect.width) * naturalWidth;
+            const y = (displayY / rect.height) * naturalHeight;
+
+            selectedPoints.push([x, y]);
+            updatePointsDisplay();
+            updateHiddenInput();
+        }
+
+        function updatePointsDisplay() {
+            const container = document.getElementById('points-display');
+            const type = document.getElementById('carMediaType').value;
+            const media = type === 'video' ? document.getElementById('coord-picker-video') : document.getElementById('coord-picker-img');
+            const svg = document.getElementById('coord-preview-svg');
+            
+            const naturalWidth = type === 'video' ? media.videoWidth : media.naturalWidth;
+            const naturalHeight = type === 'video' ? media.videoHeight : media.naturalHeight;
+
+            if (!naturalWidth) {
+                setTimeout(updatePointsDisplay, 100);
+                return;
+            }
+
+            const rect = media.getBoundingClientRect();
+            container.innerHTML = '';
+            
+            if (selectedPoints.length > 0) {
+                let polyPoints = selectedPoints.map(p => {
+                    const dx = (p[0] / naturalWidth) * rect.width;
+                    const dy = (p[1] / naturalHeight) * rect.height;
+                    return `${dx},${dy}`;
+                }).join(' ');
+                
+                svg.innerHTML = `<polygon points="${polyPoints}" fill="rgba(0,255,0,0.2)" stroke="#00ff00" stroke-width="1" />`;
+            } else {
+                svg.innerHTML = '';
+            }
+
+            selectedPoints.forEach((p, i) => {
+                const displayX = (p[0] / naturalWidth) * rect.width;
+                const displayY = (p[1] / naturalHeight) * rect.height;
+
+                const point = document.createElement('div');
+                point.className = 'coord-point';
+                point.style.left = displayX + 'px';
+                point.style.top = displayY + 'px';
+                
+                const label = document.createElement('div');
+                label.className = 'coord-label';
+                label.style.left = displayX + 'px';
+                label.style.top = displayY + 'px';
+                label.innerText = pointLabels[i];
+                
+                container.appendChild(point);
+                container.appendChild(label);
+            });
+        }
+
+        // Add window resize listener to keep points aligned visually
+        window.addEventListener('resize', updatePointsDisplay);
+
+        function updateHiddenInput() {
+            document.getElementById('carCoords').value = JSON.stringify(selectedPoints);
+        }
+
+        function resetCoords() {
+            selectedPoints = [];
+            updatePointsDisplay();
+            updateHiddenInput();
+        }
+
+        function editCar(tmp) {
+            document.getElementById('modalTitle').innerText = 'Edit Car Template';
+            document.getElementById('carId').value = tmp.id;
+            document.getElementById('carType').value = tmp.type;
+            document.getElementById('carMediaType').value = tmp.media_type || 'image';
+            document.getElementById('carMediaUrl').value = tmp.media_url;
+            
+            toggleMediaInput(tmp.media_type || 'image');
+            
+            if (tmp.media_type === 'video') {
+                const video = document.getElementById('coord-picker-video');
+                video.src = tmp.media_url;
+                video.play();
+            } else {
+                document.getElementById('coord-picker-img').src = tmp.media_url;
+            }
+            
+            if (tmp.plate_width) {
+                document.getElementById('plateAspect').value = tmp.plate_width;
+            }
+
+            if (tmp.perspective_coords) {
+                selectedPoints = JSON.parse(tmp.perspective_coords);
+                updatePointsDisplay();
+                updateHiddenInput();
+            }
+            openModal('carModal');
+        }
+    </script>
+</body>
+</html>

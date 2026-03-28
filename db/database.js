@@ -2,7 +2,11 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const dbPath = path.resolve(__dirname, 'plates.db');
+// Use persistent volume in production (Fly.io), local file in dev
+const dbPath = process.env.NODE_ENV === 'production'
+    ? '/data/db/plates.db'
+    : path.resolve(__dirname, 'plates.db');
+
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error('Error opening database', err.message);

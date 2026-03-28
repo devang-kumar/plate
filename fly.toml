@@ -1,0 +1,25 @@
+app = 'plate-devang'
+primary_region = 'sin'        # Singapore - closest to UAE
+
+[build]
+
+[env]
+  PORT = '3000'
+  NODE_ENV = 'production'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
+
+# Persistent volume for SQLite DB + uploads
+[[mounts]]
+  source = 'plate_data'
+  destination = '/data'

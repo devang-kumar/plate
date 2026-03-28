@@ -14,12 +14,15 @@ const PORT = process.env.PORT || 3000;
 // Set up file upload storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, 'public/uploads/');
+        const uploadDir = process.env.NODE_ENV === 'production'
+            ? '/data/uploads'
+            : path.join(__dirname, 'public/uploads/');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },
+
     filename: (req, file, cb) => {
         cb(null, Date.now() + '-' + file.originalname);
     }

@@ -5,6 +5,10 @@ const client = createClient({
   authToken: process.env.DATABASE_AUTH_TOKEN,
 });
 
+if (!process.env.DATABASE_URL && process.env.NODE_ENV === 'production') {
+  console.warn("WARNING: DATABASE_URL is not set in production. Falling back to local SQLite file which will be read-only.");
+}
+
 export async function query(sql: string, params: any[] = []) {
   const result = await client.execute({ sql, args: params });
   return result.rows;

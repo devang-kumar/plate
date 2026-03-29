@@ -2,6 +2,8 @@ import { query } from "@/lib/db";
 import Link from "next/link";
 import { Car, Tablet, ImagePlus, PlusCircle, Search } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 async function getHomeData() {
   const emirates = await query("SELECT * FROM emirates");
   const listings = await query(`

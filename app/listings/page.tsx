@@ -2,6 +2,8 @@ import { query } from "@/lib/db";
 import Link from "next/link";
 import { Search } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 async function getListingsData(q?: string, emirate?: string, code?: string) {
   let sql = `
     SELECT plate_listings.*, emirates.name as emirate_name 

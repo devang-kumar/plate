@@ -23,8 +23,13 @@ const PAGE_CONTENT: Record<string, { title: string; content: string }> = {
   }
 };
 
-export default function StaticPage({ params }: { params: { slug: string } }) {
-  const page = PAGE_CONTENT[params.slug] || { title: 'Page Not Found', content: 'The page you are looking for does not exist.' };
+export default async function StaticPage({ 
+  params 
+}: { 
+  params: Promise<{ slug: string }> 
+}) {
+  const { slug } = await params;
+  const page = PAGE_CONTENT[slug] || { title: 'Page Not Found', content: 'The page you are looking for does not exist.' };
 
   return (
     <div className="max-w-[1200px] mx-auto px-8 py-10 my-10 bg-white rounded-lg min-h-[400px] shadow-[0_2px_5px_rgba(0,0,0,0.1)]">

@@ -31,9 +31,10 @@ async function getListingsData(q?: string, emirate?: string, code?: string) {
 export default async function ListingsPage({
   searchParams,
 }: {
-  searchParams: { q?: string; emirate?: string; code?: string };
+  searchParams: Promise<{ q?: string; emirate?: string; code?: string }>;
 }) {
-  const listings = await getListingsData(searchParams.q, searchParams.emirate, searchParams.code);
+  const { q, emirate, code } = await searchParams;
+  const listings = await getListingsData(q, emirate, code);
   const emirates = await query("SELECT * FROM emirates");
 
   return (
@@ -45,11 +46,11 @@ export default async function ListingsPage({
         <form className="bg-white p-4 rounded border border-gray-200 shadow-sm flex flex-wrap gap-2">
           <input 
             name="q" 
-            defaultValue={searchParams.q}
+            defaultValue={q}
             placeholder="Number..." 
             className="flex-grow px-3 py-2 border border-gray-200 rounded text-sm focus:border-primary-red outline-none"
           />
-          <select name="emirate" defaultValue={searchParams.emirate} className="px-3 py-2 border border-gray-200 rounded text-sm focus:border-primary-red outline-none">
+          <select name="emirate" defaultValue={emirate} className="px-3 py-2 border border-gray-200 rounded text-sm focus:border-primary-red outline-none">
             <option value="">All Emirates</option>
             {emirates.map((em: any) => <option key={em.id} value={em.id}>{em.name}</option>)}
           </select>

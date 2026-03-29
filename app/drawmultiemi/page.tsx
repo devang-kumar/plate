@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Download, RefreshCw, Smartphone, Phone, CreditCard, MessageSquare, Logo } from 'lucide-react';
+import { Download, RefreshCw, Smartphone, Phone, CreditCard, MessageSquare } from 'lucide-react';
 
 const EMIRATES = [
   { name: 'DUBAI', color: '#e53935', short: 'DXB' },

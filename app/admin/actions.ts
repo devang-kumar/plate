@@ -2,8 +2,7 @@
 
 import { run, query } from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import fs from 'fs/promises';
-import path from 'path';
+import { put } from "@vercel/blob";
 
 // Template Actions
 export async function saveTemplate(formData: FormData) {
@@ -16,11 +15,8 @@ export async function saveTemplate(formData: FormData) {
   
   const file = formData.get('media_file') as File;
   if (file && file.size > 0) {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const fileName = `${Date.now()}-${file.name}`;
-    const filePath = path.join(process.cwd(), 'public/uploads', fileName);
-    await fs.writeFile(filePath, buffer);
-    media_url = `/uploads/${fileName}`;
+    const blob = await put(file.name, file, { access: 'public' });
+    media_url = blob.url;
   }
 
   if (id) {

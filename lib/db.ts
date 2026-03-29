@@ -1,35 +1,20 @@
-import sqlite3 from 'sqlite3';
-import { open, Database } from 'sqlite';
-import path from 'path';
+import { createClient } from '@libsql/client';
 
-let db: Database | null = null;
-
-export async function getDb() {
-  if (db) return db;
-
-  const dbPath = process.env.NODE_ENV === 'production'
-    ? '/data/db/plates.db'
-    : path.resolve(process.cwd(), 'db', 'plates.db');
-
-  db = await open({
-    filename: dbPath,
-    driver: sqlite3.Database,
-  });
-
-  return db;
-}
+const client = createClient({
+  url: process.env.DATABASE_URL || 'file:db/plates.db',
+  authToken: process.env.DATABASE_AUTH_TOKEN,
+});
 
 export async function query(sql: string, params: any[] = []) {
-  const db = await getDb();
-  return db.all(sql, params);
+  const result = await client.execute({ sql, args: params });
+  return result.rows;
 }
 
 export async function get(sql: string, params: any[] = []) {
-  const db = await getDb();
-  return db.get(sql, params);
+  const result = await client.execute({ sql, args: params });
+  return result.rows[0];
 }
 
 export async function run(sql: string, params: any[] = []) {
-  const db = await getDb();
-  return db.run(sql, params);
+  return client.execute({ sql, args: params });
 }

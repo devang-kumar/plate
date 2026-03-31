@@ -256,28 +256,50 @@ export default function PlateGenerator({ templates: initialTemplates }: { templa
     }
   };
 
+  const imgCacheRef = useRef<Record<string, HTMLImageElement>>({});
+
   const renderImagePreview = () => {
     const canvas = mainCanvasRef.current;
     if (!canvas || !currentTemplate) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const drawWithImage = (img: HTMLImageElement) => {
+      try {
+        canvas.height = canvas.width * (img.height / img.width);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const pH = 120, pW = pH * (currentTemplate.aspect || 4);
+        const plateCanvas = document.createElement('canvas');
+        plateCanvas.width = pW; plateCanvas.height = pH;
+        drawPlate(plateCanvas, currentStyle, plateNumber, plateCode);
+        const sx = canvas.width / (img.naturalWidth || img.width);
+        const sy = canvas.height / (img.naturalHeight || img.height);
+        const sc = currentTemplate.corners!.map(p => [p[0]*sx, p[1]*sy] as [number,number]);
+        drawPerspective(ctx, plateCanvas, pW, pH, sc);
+      } catch (err) {
+        console.error("Error drawing perspective:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (imgCacheRef.current[currentTemplate.media_url]) {
+      drawWithImage(imgCacheRef.current[currentTemplate.media_url]);
+      return;
+    }
+
     setLoading(true);
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = currentTemplate.media_url;
     img.onload = () => {
-      canvas.height = canvas.width * (img.height / img.width);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const pH = 120, pW = pH * (currentTemplate.aspect || 4);
-      const plateCanvas = document.createElement('canvas');
-      plateCanvas.width = pW; plateCanvas.height = pH;
-      drawPlate(plateCanvas, currentStyle, plateNumber, plateCode);
-      const sx = canvas.width / img.naturalWidth, sy = canvas.height / img.naturalHeight;
-      const sc = currentTemplate.corners!.map(p => [p[0]*sx, p[1]*sy] as [number,number]);
-      drawPerspective(ctx, plateCanvas, pW, pH, sc);
+      imgCacheRef.current[currentTemplate.media_url] = img;
+      drawWithImage(img);
+    };
+    img.onerror = () => {
+      console.error("Failed to load image", currentTemplate.media_url);
       setLoading(false);
     };
-    img.onerror = () => setLoading(false);
+    img.src = currentTemplate.media_url;
   };
 
   const renderVideoOverlay = () => {

@@ -2,7 +2,7 @@
 // Usage: npx tsx db/init.ts
 // Requires DATABASE_URL and DATABASE_AUTH_TOKEN env vars
 
-import { createClient } from '@libsql/client';
+import { createClient } from '@libsql/client/web';
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
 
@@ -11,8 +11,10 @@ if (!process.env.DATABASE_URL || !process.env.DATABASE_AUTH_TOKEN) {
   process.exit(1);
 }
 
+const dbUrl = process.env.DATABASE_URL.replace(/^libsql:\/\//, 'https://');
+
 const client = createClient({
-  url: process.env.DATABASE_URL,
+  url: dbUrl,
   authToken: process.env.DATABASE_AUTH_TOKEN,
 });
 

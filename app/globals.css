@@ -46,4 +46,14 @@ body {
   .main-nav-row a:hover {
     text-decoration: underline;
   }
+
+  /* Mobile touch-friendly tap targets */
+  @media (max-width: 640px) {
+    .logo {
+      font-size: 20px;
+      padding: 3px 10px;
+      letter-spacing: 1px;
+    }
+  }
 }
+

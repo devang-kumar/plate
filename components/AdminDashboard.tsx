@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Car, List, Globe, Plus, Edit, Trash2, X, RefreshCw, Video, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Car, List, Globe, Plus, Edit, Trash2, X, LogOut, Menu } from 'lucide-react';
 import { saveTemplate, deleteTemplate, saveListing, deleteListing, saveEmirate, deleteEmirate } from '@/app/admin/actions';
+import { logoutAction } from '@/app/admin/login/actions';
 
 export default function AdminDashboard({ 
   templates, 
@@ -44,37 +45,61 @@ export default function AdminDashboard({
     setPreviewMedia('');
   };
 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="flex min-h-screen bg-bg-gray">
+    <div className="flex min-h-screen bg-bg-gray relative">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/40 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-bg-dark text-white flex flex-col">
-        <div className="p-6 border-b border-white/10">
-          <h1 className="text-xl font-black text-primary-red tracking-tighter">PLATES.AE ADMIN</h1>
+      <aside className={`fixed md:static inset-y-0 left-0 z-30 w-64 bg-bg-dark text-white flex flex-col transform transition-transform duration-200 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+      }`}>
+        <div className="p-5 border-b border-white/10 flex items-center justify-between">
+          <h1 className="text-lg font-black text-primary-red tracking-tighter">PLATES.AE ADMIN</h1>
+          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/60 hover:text-white"><X size={20} /></button>
         </div>
         <nav className="flex-grow py-4">
           <button 
-            onClick={() => setSection('templates')}
+            onClick={() => { setSection('templates'); setSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-6 py-4 hover:bg-white/5 transition ${section === 'templates' ? 'bg-white/10 border-l-4 border-primary-red' : ''}`}
           >
             <Car size={20} /> Templates
           </button>
           <button 
-            onClick={() => setSection('listings')}
+            onClick={() => { setSection('listings'); setSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-6 py-4 hover:bg-white/5 transition ${section === 'listings' ? 'bg-white/10 border-l-4 border-primary-red' : ''}`}
           >
             <List size={20} /> Listings
           </button>
           <button 
-            onClick={() => setSection('emirates')}
+            onClick={() => { setSection('emirates'); setSidebarOpen(false); }}
             className={`w-full flex items-center gap-3 px-6 py-4 hover:bg-white/5 transition ${section === 'emirates' ? 'bg-white/10 border-l-4 border-primary-red' : ''}`}
           >
             <Globe size={20} /> Emirates
           </button>
         </nav>
+        <div className="p-4 border-t border-white/10">
+          <form action={logoutAction}>
+            <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition text-sm font-medium">
+              <LogOut size={18} /> Sign Out
+            </button>
+          </form>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-grow p-8 overflow-y-auto">
+      <main className="flex-grow p-4 md:p-8 overflow-y-auto md:ml-0">
+        {/* Mobile header */}
+        <div className="flex items-center gap-3 md:hidden mb-4">
+          <button onClick={() => setSidebarOpen(true)} className="p-2 bg-bg-dark text-white rounded-lg">
+            <Menu size={20} />
+          </button>
+          <span className="font-bold text-gray-700 capitalize">{section}</span>
+        </div>
         {section === 'templates' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">

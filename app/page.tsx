@@ -19,33 +19,33 @@ export default async function HomePage() {
   const { emirates, listings } = await getHomeData();
 
   return (
-    <div className="max-w-[680px] mx-auto px-2.5 py-4">
+    <div className="max-w-[680px] mx-auto px-3 py-4">
       {/* SERVICES */}
-      <p className="text-center text-[#444] text-[14px] mb-3 font-normal">Services</p>
+      <p className="text-center text-[#444] text-[13px] mb-3 font-normal uppercase tracking-wider">Services</p>
       <div className="grid grid-cols-2 gap-2.5 mb-4">
-        <Link href="/listings" className="bg-white border border-gray-200 rounded p-5 text-center transition-shadow hover:shadow-md group">
-          <div className="w-[130px] h-[90px] mb-2 mx-auto flex items-center justify-center bg-gray-50 rounded">
-            <Car size={48} className="text-primary-red" />
+        <Link href="/listings" className="bg-white border border-gray-200 rounded p-4 text-center transition-shadow hover:shadow-md group">
+          <div className="w-full h-[70px] sm:h-[90px] mb-2 mx-auto flex items-center justify-center bg-gray-50 rounded">
+            <Car size={40} className="text-primary-red" />
           </div>
-          <h3 className="m-0 text-[13px] font-normal text-[#444]">Dubai number plates</h3>
+          <h3 className="m-0 text-[12px] sm:text-[13px] font-normal text-[#444]">Dubai number plates</h3>
         </Link>
-        <Link href="/buy-tablet" className="bg-white border border-gray-200 rounded p-5 text-center transition-shadow hover:shadow-md">
-          <div className="w-[130px] h-[90px] mb-2 mx-auto flex items-center justify-center bg-gray-50 rounded">
-            <Tablet size={48} className="text-blue-500" />
+        <Link href="/buy-tablet" className="bg-white border border-gray-200 rounded p-4 text-center transition-shadow hover:shadow-md">
+          <div className="w-full h-[70px] sm:h-[90px] mb-2 mx-auto flex items-center justify-center bg-gray-50 rounded">
+            <Tablet size={40} className="text-blue-500" />
           </div>
-          <h3 className="m-0 text-[13px] font-normal text-[#444]">Buy a tablet online</h3>
+          <h3 className="m-0 text-[12px] sm:text-[13px] font-normal text-[#444]">Buy a tablet online</h3>
         </Link>
-        <Link href="/drawing" className="bg-white border border-gray-200 rounded p-5 text-center transition-shadow hover:shadow-md">
-          <div className="w-[130px] h-[90px] mb-2 mx-auto flex items-center justify-center bg-gray-50 rounded">
-            <ImagePlus size={48} className="text-green-500" />
+        <Link href="/drawing" className="bg-white border border-gray-200 rounded p-4 text-center transition-shadow hover:shadow-md">
+          <div className="w-full h-[70px] sm:h-[90px] mb-2 mx-auto flex items-center justify-center bg-gray-50 rounded">
+            <ImagePlus size={40} className="text-green-500" />
           </div>
-          <h3 className="m-0 text-[13px] font-normal text-[#444]">drawing numbers</h3>
+          <h3 className="m-0 text-[12px] sm:text-[13px] font-normal text-[#444]">Drawing numbers</h3>
         </Link>
-        <Link href="/sell" className="bg-white border border-gray-200 rounded p-5 text-center transition-shadow hover:shadow-md">
-          <div className="w-[130px] h-[90px] mb-2 mx-auto flex items-center justify-center bg-gray-50 rounded">
-            <PlusCircle size={48} className="text-orange-500" />
+        <Link href="/sell" className="bg-white border border-gray-200 rounded p-4 text-center transition-shadow hover:shadow-md">
+          <div className="w-full h-[70px] sm:h-[90px] mb-2 mx-auto flex items-center justify-center bg-gray-50 rounded">
+            <PlusCircle size={40} className="text-orange-500" />
           </div>
-          <h3 className="m-0 text-[13px] font-normal text-[#444]">Sell your number</h3>
+          <h3 className="m-0 text-[12px] sm:text-[13px] font-normal text-[#444]">Sell your number</h3>
         </Link>
       </div>
 

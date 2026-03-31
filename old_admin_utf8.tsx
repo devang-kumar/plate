@@ -1,9 +1,8 @@
-"use client";
+﻿"use client";
 
-import React, { useState, useRef } from 'react';
-import { Car, List, Globe, Plus, Edit, Trash2, X, LogOut, Menu } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Car, List, Globe, Plus, Edit, Trash2, X, RefreshCw, Video, Image as ImageIcon } from 'lucide-react';
 import { saveTemplate, deleteTemplate, saveListing, deleteListing, saveEmirate, deleteEmirate } from '@/app/admin/actions';
-import { logoutAction } from '@/app/admin/login/actions';
 
 export default function AdminDashboard({ 
   templates, 
@@ -27,46 +26,14 @@ export default function AdminDashboard({
   const handleCoordClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (selectedPoints.length >= 4 || !mediaRef.current) return;
     const rect = mediaRef.current.getBoundingClientRect();
-    const isVideo = mediaType === 'video';
+    const displayX = e.clientX - rect.left;
+    const displayY = e.clientY - rect.top;
     
-    // Intrinsic media dimensions
-    const nw = isVideo ? (mediaRef.current as HTMLVideoElement).videoWidth : (mediaRef.current as HTMLImageElement).naturalWidth;
-    const nh = isVideo ? (mediaRef.current as HTMLVideoElement).videoHeight : (mediaRef.current as HTMLImageElement).naturalHeight;
+    const naturalWidth = mediaType === 'video' ? (mediaRef.current as HTMLVideoElement).videoWidth : (mediaRef.current as HTMLImageElement).naturalWidth;
+    const naturalHeight = mediaType === 'video' ? (mediaRef.current as HTMLVideoElement).videoHeight : (mediaRef.current as HTMLImageElement).naturalHeight;
 
-    if (!nw || !nh) return;
-
-    // Calculate actual rendered size inside the object-contain container
-    const containerAspect = rect.width / rect.height;
-    const mediaAspect = nw / nh;
-    
-    let renderedW = rect.width;
-    let renderedH = rect.height;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    if (mediaAspect > containerAspect) {
-      // Media is bound by width, pillarboxing on top/bottom
-      renderedH = rect.width / mediaAspect;
-      offsetY = (rect.height - renderedH) / 2;
-    } else {
-      // Media is bound by height, pillarboxing on left/right
-      renderedW = rect.height * mediaAspect;
-      offsetX = (rect.width - renderedW) / 2;
-    }
-
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    // Convert mouse to inner rendered media rect
-    const innerX = mouseX - offsetX;
-    const innerY = mouseY - offsetY;
-
-    // Ensure click is inside the actual image content, not the black bars
-    if (innerX < 0 || innerX > renderedW || innerY < 0 || innerY > renderedH) return;
-
-    const x = (innerX / renderedW) * nw;
-    const y = (innerY / renderedH) * nh;
-    
+    const x = (displayX / rect.width) * naturalWidth;
+    const y = (displayY / rect.height) * naturalHeight;
     setSelectedPoints([...selectedPoints, [x, y]]);
   };
 
@@ -77,61 +44,37 @@ export default function AdminDashboard({
     setPreviewMedia('');
   };
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
-    <div className="flex min-h-screen bg-bg-gray relative">
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/40 z-20 md:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
-
+    <div className="flex min-h-screen bg-bg-gray">
       {/* Sidebar */}
-      <aside className={`fixed md:static inset-y-0 left-0 z-30 w-64 bg-bg-dark text-white flex flex-col transform transition-transform duration-200 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-      }`}>
-        <div className="p-5 border-b border-white/10 flex items-center justify-between">
-          <h1 className="text-lg font-black text-primary-red tracking-tighter">PLATES.AE ADMIN</h1>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden text-white/60 hover:text-white"><X size={20} /></button>
+      <aside className="w-64 bg-bg-dark text-white flex flex-col">
+        <div className="p-6 border-b border-white/10">
+          <h1 className="text-xl font-black text-primary-red tracking-tighter">PLATES.AE ADMIN</h1>
         </div>
         <nav className="flex-grow py-4">
           <button 
-            onClick={() => { setSection('templates'); setSidebarOpen(false); }}
+            onClick={() => setSection('templates')}
             className={`w-full flex items-center gap-3 px-6 py-4 hover:bg-white/5 transition ${section === 'templates' ? 'bg-white/10 border-l-4 border-primary-red' : ''}`}
           >
             <Car size={20} /> Templates
           </button>
           <button 
-            onClick={() => { setSection('listings'); setSidebarOpen(false); }}
+            onClick={() => setSection('listings')}
             className={`w-full flex items-center gap-3 px-6 py-4 hover:bg-white/5 transition ${section === 'listings' ? 'bg-white/10 border-l-4 border-primary-red' : ''}`}
           >
             <List size={20} /> Listings
           </button>
           <button 
-            onClick={() => { setSection('emirates'); setSidebarOpen(false); }}
+            onClick={() => setSection('emirates')}
             className={`w-full flex items-center gap-3 px-6 py-4 hover:bg-white/5 transition ${section === 'emirates' ? 'bg-white/10 border-l-4 border-primary-red' : ''}`}
           >
             <Globe size={20} /> Emirates
           </button>
         </nav>
-        <div className="p-4 border-t border-white/10">
-          <form action={logoutAction}>
-            <button type="submit" className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition text-sm font-medium">
-              <LogOut size={18} /> Sign Out
-            </button>
-          </form>
-        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-grow p-4 md:p-8 overflow-y-auto md:ml-0">
-        {/* Mobile header */}
-        <div className="flex items-center gap-3 md:hidden mb-4">
-          <button onClick={() => setSidebarOpen(true)} className="p-2 bg-bg-dark text-white rounded-lg">
-            <Menu size={20} />
-          </button>
-          <span className="font-bold text-gray-700 capitalize">{section}</span>
-        </div>
+      <main className="flex-grow p-8 overflow-y-auto">
         {section === 'templates' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -241,13 +184,7 @@ export default function AdminDashboard({
             </div>
             
             <form action={async (formData) => {
-              if (modalType === 'template') {
-                if (selectedPoints.length > 0 && selectedPoints.length !== 4) {
-                  alert("Please select exactly 4 perspective points, or 0 to use the default rectangle.");
-                  return;
-                }
-                await saveTemplate(formData);
-              }
+              if (modalType === 'template') await saveTemplate(formData);
               if (modalType === 'listing') await saveListing(formData);
               if (modalType === 'emirate') await saveEmirate(formData);
               closeModal();
@@ -311,27 +248,9 @@ export default function AdminDashboard({
                                 const m = mediaRef.current;
                                 if (!m) return '0,0';
                                 const rect = m.getBoundingClientRect();
-                                const isVideo = mediaType === 'video';
-                                const nw = isVideo ? (m as HTMLVideoElement).videoWidth : (m as HTMLImageElement).naturalWidth;
-                                const nh = isVideo ? (m as HTMLVideoElement).videoHeight : (m as HTMLImageElement).naturalHeight;
-                                if (!nw || !nh) return '0,0';
-                                
-                                const containerAspect = rect.width / rect.height;
-                                const mediaAspect = nw / nh;
-                                let renderedW = rect.width;
-                                let renderedH = rect.height;
-                                let offsetX = 0;
-                                let offsetY = 0;
-
-                                if (mediaAspect > containerAspect) {
-                                  renderedH = rect.width / mediaAspect;
-                                  offsetY = (rect.height - renderedH) / 2;
-                                } else {
-                                  renderedW = rect.height * mediaAspect;
-                                  offsetX = (rect.width - renderedW) / 2;
-                                }
-
-                                return `${(p[0] / nw) * renderedW + offsetX},${(p[1] / nh) * renderedH + offsetY}`;
+                                const nw = mediaType === 'video' ? (m as HTMLVideoElement).videoWidth : (m as HTMLImageElement).naturalWidth;
+                                const nh = mediaType === 'video' ? (m as HTMLVideoElement).videoHeight : (m as HTMLImageElement).naturalHeight;
+                                return `${(p[0] / nw) * rect.width},${(p[1] / nh) * rect.height}`;
                               }).join(' ')} 
                               fill="rgba(0,255,0,0.2)" 
                               stroke="#00ff00" 
@@ -343,31 +262,10 @@ export default function AdminDashboard({
                           const m = mediaRef.current;
                           if (!m) return null;
                           const rect = m.getBoundingClientRect();
-                          const isVideo = mediaType === 'video';
-                          const nw = isVideo ? (m as HTMLVideoElement).videoWidth : (m as HTMLImageElement).naturalWidth;
-                          const nh = isVideo ? (m as HTMLVideoElement).videoHeight : (m as HTMLImageElement).naturalHeight;
-                          if (!nw || !nh) return null;
-                          
-                          const containerAspect = rect.width / rect.height;
-                          const mediaAspect = nw / nh;
-                          let renderedW = rect.width;
-                          let renderedH = rect.height;
-                          let offsetX = 0;
-                          let offsetY = 0;
-
-                          if (mediaAspect > containerAspect) {
-                            renderedH = rect.width / mediaAspect;
-                            offsetY = (rect.height - renderedH) / 2;
-                          } else {
-                            renderedW = rect.height * mediaAspect;
-                            offsetX = (rect.width - renderedW) / 2;
-                          }
-
-                          const displayX = (p[0] / nw) * renderedW + offsetX;
-                          const displayY = (p[1] / nh) * renderedH + offsetY;
-
+                          const nw = mediaType === 'video' ? (m as HTMLVideoElement).videoWidth : (m as HTMLImageElement).naturalWidth;
+                          const nh = mediaType === 'video' ? (m as HTMLVideoElement).videoHeight : (m as HTMLImageElement).naturalHeight;
                           return (
-                            <div key={i} className="absolute w-3 h-3 bg-green-500 rounded-full border-2 border-white -translate-x-1/2 -translate-y-1/2 shadow-lg" style={{ left: `${displayX}px`, top: `${displayY}px` }} />
+                            <div key={i} className="absolute w-3 h-3 bg-green-500 rounded-full border-2 border-white -translate-x-1/2 -translate-y-1/2 shadow-lg" style={{ left: `${(p[0] / nw) * rect.width}px`, top: `${(p[1] / nh) * rect.height}px` }} />
                           );
                         })}
                       </div>

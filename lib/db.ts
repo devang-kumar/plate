@@ -10,13 +10,30 @@ if (!process.env.DATABASE_URL && process.env.NODE_ENV === 'production') {
 }
 
 export async function query(sql: string, params: any[] = []) {
-  const result = await client.execute({ sql, args: params });
-  return result.rows;
+  try {
+    const result = await client.execute({ sql, args: params });
+    return result.rows;
+  } catch (error: any) {
+    console.error(`Database Query Error: ${error.message}`, { sql, params });
+    // Return empty array instead of crashing if tables don't exist yet
+    if (error.message.includes('no such table')) {
+      return [];
+    }
+    throw error;
+  }
 }
 
 export async function get(sql: string, params: any[] = []) {
-  const result = await client.execute({ sql, args: params });
-  return result.rows[0];
+  try {
+    const result = await client.execute({ sql, args: params });
+    return result.rows[0];
+  } catch (error: any) {
+    console.error(`Database Get Error: ${error.message}`, { sql, params });
+    if (error.message.includes('no such table')) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function run(sql: string, params: any[] = []) {

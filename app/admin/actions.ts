@@ -15,8 +15,12 @@ export async function saveTemplate(formData: FormData) {
   
   const file = formData.get('media_file') as File;
   if (file && file.size > 0) {
-    const blob = await put(file.name, file, { access: 'public' });
-    media_url = blob.url;
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.warn('BLOB_READ_WRITE_TOKEN is not set. File upload skipped, using provided URL instead.');
+    } else {
+      const blob = await put(file.name, file, { access: 'public' });
+      media_url = blob.url;
+    }
   }
 
   if (id) {
